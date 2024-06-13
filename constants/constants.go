@@ -1,0 +1,92 @@
+// This package includes 'gladius-protocol' sepcific constants
+// and other helpers that can be used across applications.
+package constants
+
+import (
+	"github.com/ethereum/go-ethereum/common"
+)
+
+const (
+	ERC20_TRANSFER_SIG = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+	MULTICALL_ADDRESS  = "0xcA11bde05977b3631167028862bE2a173976CA11"
+
+	// It's 10k in 'gladius-protocol'.
+	BPS = 10_000
+
+	ETHEREUM_MAINNET = 1
+	OPTIMISM_MAINNET = 10
+	BASE             = 8453
+	ARBITRUM_ONE     = 42161
+	ARBITRUM_SEPOLIA = 421614
+
+	PERMIT2_DEFAULT = "0x000000000022d473030f116ddee9f6b43ac78ba3"
+
+	// Default url for a Gladius server.
+	GLADIUS_URL = "https://gladius.rubicon.finance/dutch-auction/"
+)
+
+var ZERO_ADDRESS common.Address = common.HexToAddress(
+	"0x0000000000000000000000000000000000000000")
+
+var PERMIT2_MAPPING = map[int]string{
+	1:        PERMIT2_DEFAULT,
+	5:        PERMIT2_DEFAULT,
+	10:       PERMIT2_DEFAULT,
+	137:      PERMIT2_DEFAULT,
+	420:      PERMIT2_DEFAULT,
+	8453:     PERMIT2_DEFAULT,
+	42161:    PERMIT2_DEFAULT,
+	421613:   PERMIT2_DEFAULT,
+	421614:   PERMIT2_DEFAULT,
+	12341234: PERMIT2_DEFAULT,
+}
+
+var ORDER_QUOTER_MAPPING = map[int]string{
+	1:        "0x56e43695d183dcFa9D8fE95E796227A491627Fd9",
+	5:        "0x54539967a06Fc0E3C3ED0ee320Eb67362D13C5fF",
+	10:       "0x9244aeAE36f34d63244EDCF9fdb58C03cE4Ce12d",
+	137:      "0x54539967a06Fc0E3C3ED0ee320Eb67362D13C5fF",
+	420:      "0xB9e40a5380cEd5217DD035A4F2D71739bbea0c6E",
+	8453:     "0x56e43695d183dcFa9D8fE95E796227A491627Fd9",
+	42161:    "0x9244aeAE36f34d63244EDCF9fdb58C03cE4Ce12d",
+	421613:   "0xf91dA8728Ff16e044C8cea5281613F33aE4D24f8",
+	421614:   "0xc08fbEEd30a00098059EAd072D4b6bAA0CcB4cbE",
+	12341234: "0xbea0901A41177811b099F787D753436b2c47690E",
+}
+
+var FEE_CTRL_MAPPING = map[int]string{
+	1:     "0xCd4b4242F09f518A18156B6b46a35c5B96A73d3e",
+	10:    "0xD376b6BAb4c5dA3Cd83DD49A346b3D432385724E",
+	8453:  "0x72826Cd3c3040e00F2D831d835b1554Ec02ef58a",
+	42161: "0xB6efa81466ab4A93129245bD2aAA535280F7ADbB",
+}
+
+type OrderType string
+
+var Dutch OrderType = "Dutch"
+
+var REACTOR_ADDRESS_MAPPING = map[int]map[OrderType]string{
+	1:        {Dutch: "0x3C53c04d633bec3fB0De3492607C239BF92d07f9"},
+	5:        {Dutch: "0x6000da47483062A0D734Ba3dc7576Ce6A0B645C4"},
+	10:       {Dutch: "0x98169248bDf25E0e297EA478Ab46ac24058Fac78"},
+	137:      {Dutch: "0x6000da47483062A0D734Ba3dc7576Ce6A0B645C4"},
+	420:      {Dutch: "0xC79A3da4107DE6c22bEd13E3f09a1379D49f2189"},
+	8453:     {Dutch: "0x3C53c04d633bec3fB0De3492607C239BF92d07f9"},
+	42161:    {Dutch: "0x6D81571B4c75CCf08bD16032D0aE54dbaff548b0"},
+	421613:   {Dutch: "0xa7C007078CbEB6E0DF56A117752b4f44f4F93187"},
+	421614:   {Dutch: "0x1456a1897509Bb9A42610d8fF5FE869D2612C181"},
+	12341234: {Dutch: "0xbD7F9D0239f81C94b728d827a87b9864972661eC"},
+}
+
+var REVERSE_REACTOR_MAPPING = make(map[string]map[int]OrderType)
+
+func init() {
+	for chids, v := range REACTOR_ADDRESS_MAPPING {
+		for otype, reactor := range v {
+			REVERSE_REACTOR_MAPPING[reactor] =
+				make(map[int]OrderType)
+			REVERSE_REACTOR_MAPPING[reactor][chids] =
+				otype
+		}
+	}
+}
