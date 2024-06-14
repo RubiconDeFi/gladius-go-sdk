@@ -1,8 +1,10 @@
 package requests
 
 import (
+	"github.com/RubiconDeFi/gladius-go-sdk/binds"
 	"github.com/RubiconDeFi/gladius-go-sdk/constants"
 	glo "github.com/RubiconDeFi/gladius-go-sdk/order/gladiusOrder"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"testing"
 )
 
@@ -11,17 +13,20 @@ const (
 	BUY  = "0x7F5c764cBc14f9669B88837ca1490cCa17c31607"
 )
 
-var req = &OrdersGET{
-	// GladiusUrl: default
-	Status: EXPIRED,
-	Options: &OrdersOpts{
-		ChainID:   constants.OPTIMISM_MAINNET,
-		SellToken: SELL,
-		BuyToken:  BUY,
-		Limit:     228,
-	},
-}
-var statuses [3]OrderStatus = [3]OrderStatus{OPEN, EXPIRED, FILLED}
+var (
+	req = &OrdersGET{
+		// GladiusUrl: default
+		Status: EXPIRED,
+		Options: &OrdersOpts{
+			ChainID:   constants.OPTIMISM_MAINNET,
+			SellToken: SELL,
+			BuyToken:  BUY,
+			Limit:     228,
+		},
+	}
+	statuses [3]OrderStatus = [3]OrderStatus{OPEN, EXPIRED, FILLED}
+	rpc                     = "https://rpc.ankr.com/optimism"
+)
 
 func TestGetRawOrders(t *testing.T) {
 	raw, err := GetRawOrders(req)
@@ -48,6 +53,35 @@ func TestGetGladiusOrders(t *testing.T) {
 
 	if len(o.Orders) > 0 {
 		validateStatus(req.Status, o, t)
+	}
+}
+
+func TestGetResolvedGldOrders(t *testing.T) {
+	ethc, err := ethclient.Dial(rpc)
+	if err != nil {
+		t.Error(err)
+	}
+	bopt := &binds.BindOpts{
+		ChainID:   10,
+		EthClient: ethc,
+	}
+	o, err := GetResolvedGladiusOrders(req, bopt)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Check that all the order hashes are unique
+	var usedHashes map[[32]byte]bool = make(map[[32]byte]bool)
+	for i := 0; i < len(o); i++ {
+		if usedHashes[o[i].Hash] {
+			t.Error("hash was already used!")
+		}
+		usedHashes[o[i].Hash] = true
+	}
+
+	if len(o) == 0 {
+		t.Error("no orders")
 	}
 }
 
