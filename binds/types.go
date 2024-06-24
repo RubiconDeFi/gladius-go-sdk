@@ -23,3 +23,16 @@ type BindOpts struct {
 	// a 'gladius-protocol' contract on that chain.
 	ChainID int
 }
+
+func NewBindOpts(rpc, address string, chainID int) (*BindOpts, error) {
+	ethc, err := ethclient.Dial(rpc)
+	if err != nil {
+		return nil, err
+	}
+
+	return &BindOpts{
+		EthClient: ethc,
+		Address:   address,
+		ChainID:   chainID,
+	}, nil
+}
