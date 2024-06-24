@@ -11,6 +11,10 @@ import (
 // Returns an instance of 'RubiconFeeController' contract.
 // Can use either 'Address' or 'ChainID' in 'bopt'
 func (bopt *BindOpts) FeeController() (ctrl *contracts.FeeController, err error) {
+	if bopt.EthClient == nil {
+		err = NoEthClient
+		return
+	}
 	if bopt.Address == "" {
 		bopt.Address = constants.FEE_CTRL_MAPPING[bopt.ChainID]
 	}
@@ -24,6 +28,11 @@ func (bopt *BindOpts) FeeController() (ctrl *contracts.FeeController, err error)
 // Returns an instance of 'GladiusReactor' contract.
 // Can use either 'Address' or 'ChainID' in 'bopt'
 func (bopt *BindOpts) GladiusReactor() (rctr *contracts.GladiusReactor, err error) {
+	if bopt.EthClient == nil {
+		err = NoEthClient
+		return
+	}
+
 	if bopt.Address == "" {
 		bopt.Address = constants.
 			REACTOR_ADDRESS_MAPPING[bopt.ChainID][constants.Dutch]
@@ -38,6 +47,10 @@ func (bopt *BindOpts) GladiusReactor() (rctr *contracts.GladiusReactor, err erro
 // Returns an instance of 'Erc20' contract.
 // Can use only 'ChainID' in 'bopt'.
 func (bopt *BindOpts) Erc20() (erc20 *contracts.Erc20, err error) {
+	if bopt.EthClient == nil {
+		err = NoEthClient
+		return
+	}
 	if bopt.Address == "" {
 		err = EmptyAddress
 		return
