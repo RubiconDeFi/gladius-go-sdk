@@ -22,23 +22,36 @@ import (
 // fee controller or by specifying 'ChainID' to use constant value.
 // Note, if specified it will execute RPC call to get fees.
 // Set it to 'nil' if fee inclusion isn't needed.
-func (g *GladiusOrdersJSON) Resolve(bopt *binds.BindOpts) (r []*contracts.ResolvedOrder, err error) {
+func (g *GladiusOrdersJSON) Resolve(bopt *binds.BindOpts) ([]*contracts.ResolvedOrder, error) {
 	orders := g.Orders
-	r = make([]*contracts.ResolvedOrder, len(orders))
+	r := make([]*contracts.ResolvedOrder, len(orders))
+	errch := make(chan error, len(orders))
 
 	var wg sync.WaitGroup
+	wg.Add(len(orders))
 
 	for i := 0; i < len(orders); i++ {
-		wg.Add(1)
-
 		go func(i int) {
-			defer wg.Done()
-			r[i], err = orders[i].Resolve(bopt)
+			ri, err := orders[i].Resolve(bopt)
+			if err != nil {
+				errch <- err
+				return
+			}
+			r[i] = ri
+
+			wg.Done()
 		}(i)
 	}
 	wg.Wait()
+	close(errch)
 
-	return
+	for err := range errch {
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return r, nil
 }
 
 // Resolves individual gladius order into individual 'ResolvedOrder'.
@@ -46,17 +59,16 @@ func (g *GladiusOrdersJSON) Resolve(bopt *binds.BindOpts) (r []*contracts.Resolv
 func (g *GladiusOrderJSON) Resolve(bopt *binds.BindOpts) (*contracts.ResolvedOrder, error) {
 	rout := make([]contracts.OutputToken, len(g.Outputs))
 
-	var wg sync.WaitGroup
-
 	dStart := ParseDecayStartTime(g.EncodedOrder)
 	dEnd := ParseDecayEndTime(g.EncodedOrder)
 
-	for i := 0; i < len(rout); i++ {
-		wg.Add(1)
+	var wg sync.WaitGroup
+	wg.Add(len(rout))
 
+	for i := 0; i < len(rout); i++ {
 		go func(i int) {
-			defer wg.Done()
 			rout[i] = g.Outputs[i].Resolve(dStart, dEnd)
+			wg.Done()
 		}(i)
 	}
 	wg.Wait()
@@ -73,10 +85,8 @@ func (g *GladiusOrderJSON) Resolve(bopt *binds.BindOpts) (*contracts.ResolvedOrd
 		out, err := bopt.GetFee(r)
 
 		if err != nil {
-			// Call wasn't successful
 			return r, err
 		}
-
 		r.Outputs = append(r.Outputs, out...)
 	}
 
