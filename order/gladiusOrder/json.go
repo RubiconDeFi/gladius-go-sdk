@@ -20,7 +20,7 @@ type GladiusOrderJSON struct {
 	ChainID      int           `json:"chainId"`
 	OrderHash    string        `json:"orderHash"`
 	Input        DutchInput    `json:"input"`
-	Price        float64       `json:"price"`
+	Price        any           `json:"price"`
 	Type         string        `json:"type"`
 }
 
