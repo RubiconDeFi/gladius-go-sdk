@@ -9,7 +9,6 @@ import (
 
 func sendGET(url string, authKey string) ([]byte, error) {
 	req := fasthttp.AcquireRequest()
-	defer fasthttp.ReleaseRequest(req)
 
 	req.Header.SetMethod("GET")
 	req.SetRequestURI(url)
@@ -35,7 +34,9 @@ func sendGET(url string, authKey string) ([]byte, error) {
 
 	body := make([]byte, len(resp.Body()))
 	copy(body, resp.Body())
+
 	fasthttp.ReleaseResponse(resp)
+	fasthttp.ReleaseRequest(req)
 
 	return body, nil
 }

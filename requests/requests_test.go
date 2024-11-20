@@ -25,7 +25,7 @@ var (
 		},
 	}
 	statuses [3]OrderStatus = [3]OrderStatus{OPEN, EXPIRED, FILLED}
-	rpc                     = "https://rpc.ankr.com/optimism"
+	rpc                     = "https://mainnet.optimism.io/"
 )
 
 func TestGetRawOrders(t *testing.T) {
